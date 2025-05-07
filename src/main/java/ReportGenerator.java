@@ -22,23 +22,70 @@ public class ReportGenerator {
 
         @Override
         public void run() {
-            //TODO:
-            // - Read all lines from the input file (path)
-            // - For each line, parse product ID, amount, and discount
-            // - The format of the files are like this:
-            //      [productId],[amount],[discountAmount]
-            // - Find the corresponding product from catalog
-            // - Calculate discounted cost and update total stats (totalAmount, totalCost, totalDiscountSum, totalLines)
-            // - Track the most expensive purchase after discount
+            try {
+                BufferedReader reader = new BufferedReader(new FileReader(path));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    String[] parts = line.split(",");
+                    int productId = Integer.parseInt(parts[0].trim());
+                    int amount = Integer.parseInt(parts[1].trim());
+                    int discount = Integer.parseInt(parts[2].trim());
+
+                    Product product = findProductById(productId);
+                    if (product == null) continue;
+
+                    double totalPrice = product.getPrice() * amount;
+                    double discountedPrice = totalPrice - discount;
+
+                    totalLines++;
+                    totalAmount += amount;
+                    totalCost += discountedPrice;
+                    totalDiscountSum += discount;
+
+                    if (discountedPrice > highestCostAfterDiscount) {
+                        highestCostAfterDiscount = discountedPrice;
+                        mostExpensiveProduct = product;
+                    }
+                }
+                reader.close();
+            } catch (IOException e) {
+                System.err.println("Error reading file " + path + ": " + e.getMessage());
+            }
         }
 
-        public void makeReport() {
-            // TODO:
-            // - Print the filename
-            // - Print total cost and total items bought
-            // - Calculate and print average discount
-            // - Display info about the most expensive purchase after discount
+        // Helper method to find product by ID
+        private Product findProductById(int id) {
+            for (Product product : productCatalog) {
+                if (product != null && product.getProductID() == id) {
+                    return product;
+                }
+            }
+            return null;
         }
+
+
+        public void makeReport() {
+            System.out.println("Report for file: " + path);
+            System.out.println("Total items bought: " + totalAmount);
+            System.out.printf("Total cost after discount: %.2f\n", totalCost);
+            if (totalLines > 0) {
+                double avgDiscount = (double) totalDiscountSum / totalLines;
+                System.out.printf("Average discount: %.2f\n", avgDiscount);
+            } else {
+                System.out.println("Average discount: N/A");
+            }
+
+            if (mostExpensiveProduct != null) {
+                System.out.println("Most expensive purchase (after discount):");
+                System.out.println(" - Product name: " + mostExpensiveProduct.getProductName());
+                System.out.printf(" - Cost: %.2f\n", highestCostAfterDiscount);
+            } else {
+                System.out.println("No valid purchases found.");
+            }
+
+            System.out.println("----------------------------------------------------");
+        }
+
     }
 
     static class Product {
@@ -71,19 +118,52 @@ public class ReportGenerator {
     static Product[] productCatalog = new Product[10];
 
     public static void loadProducts() throws IOException {
-        // TODO:
-        // - Read lines from Products.txt
-        // - For each line, parse product ID, name, and price
-        // - The format of the file is like this:
-        //      [productId],[name],[price]
-        // - Store Product objects in the productCatalog array
+        BufferedReader reader = new BufferedReader(new FileReader("src/main/resources/Products.txt"));
+        String line;
+        int index = 0;
+        while ((line = reader.readLine()) != null && index < productCatalog.length) {
+            String[] parts = line.split(",");
+            int id = Integer.parseInt(parts[0].trim());
+            String name = parts[1].trim();
+            double price = Double.parseDouble(parts[2].trim());
+            productCatalog[index++] = new Product(id, name, price);
+        }
+        reader.close();
     }
 
+
     public static void main(String[] args) throws InterruptedException {
-        // TODO:
-        // - Create one TaskRunnable and Thread for each order file
-        // - Start all threads
-        // - Wait for all threads to finish
-        // - After all threads are done, call makeReport() on each TaskRunnable
+        try {
+            loadProducts();
+        } catch (IOException e) {
+            System.err.println("Failed to load products: " + e.getMessage());
+            return;
+        }
+
+        String[] orderFiles = {
+                "src/main/resources/2021_order_details.txt",
+                "src/main/resources/2022_order_details.txt",
+                "src/main/resources/2023_order_details.txt",
+                "src/main/resources/2024_order_details.txt"
+        };
+
+        TaskRunnable[] tasks = new TaskRunnable[orderFiles.length];
+        Thread[] threads = new Thread[orderFiles.length];
+
+        for (int i = 0; i < orderFiles.length; i++) {
+            tasks[i] = new TaskRunnable(orderFiles[i]);
+            threads[i] = new Thread(tasks[i]);
+            threads[i].start();
+        }
+
+        for (Thread thread : threads) {
+            thread.join(); // Wait for all threads to finish
+        }
+
+        // After all threads are done, generate reports
+        for (TaskRunnable task : tasks) {
+            task.makeReport();
+        }
     }
+
 }
