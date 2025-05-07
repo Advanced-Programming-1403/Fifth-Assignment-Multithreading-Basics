@@ -6,22 +6,26 @@ public class TypingTest {
 
     private static String lastInput = "";
     private static Scanner scanner = new Scanner(System.in);
-    public static class InputRunnable implements Runnable {
 
-        //TODO: Implement a thread to get user input without blocking the main thread
+    public static class InputRunnable implements Runnable {
         @Override
         public void run() {
-
+            if (scanner.hasNextLine()) {
+                lastInput = scanner.nextLine();
+            }
         }
     }
-
 
     public static void testWord(String wordToTest) {
         try {
             System.out.println(wordToTest);
             lastInput = "";
 
-            // TODO
+            Thread inputThread = new Thread(new InputRunnable());
+            inputThread.start();
+
+            int waitTime = 5000; // 5 seconds to type
+            inputThread.join(waitTime); // Wait, but only up to 5 seconds
 
             System.out.println();
             System.out.println("You typed: " + lastInput);
@@ -37,25 +41,37 @@ public class TypingTest {
     }
 
     public static void typingTest(List<String> inputList) throws InterruptedException {
+        int correctCount = 0;
 
-        for (int i = 0; i < inputList.size(); i++) {
-            String wordToTest = inputList.get(i);
+        for (String wordToTest : inputList) {
             testWord(wordToTest);
+            if (wordToTest.equals(lastInput)) {
+                correctCount++;
+            }
             Thread.sleep(2000); // Pause briefly before showing the next word
         }
 
-        // TODO: Display a summary of test results
+        // Summary
+        System.out.println("\nTest Summary:");
+        System.out.println("Total words: " + inputList.size());
+        System.out.println("Correct entries: " + correctCount);
+        System.out.println("Accuracy: " + (100.0 * correctCount / inputList.size()) + "%");
     }
 
     public static void main(String[] args) throws InterruptedException {
         List<String> words = new ArrayList<>();
-        words.add("remember");
-        words.add("my friend");
-        words.add("boredom");
-        words.add("is a");
-        words.add("crime");
 
-        // TODO: Replace the hardcoded word list with words read from the given file in the resources folder (Words.txt)
+        try (Scanner fileScanner = new Scanner(new java.io.File("src/main/resources/Words.txt"))) {
+            while (fileScanner.hasNextLine()) {
+                String line = fileScanner.nextLine().trim();
+                if (!line.isEmpty()) {
+                    words.add(line);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Error reading words from file: " + e.getMessage());
+        }
+
         typingTest(words);
 
         System.out.println("Press enter to exit.");
