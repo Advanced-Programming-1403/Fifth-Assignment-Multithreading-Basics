@@ -29,7 +29,7 @@ public class ReportGenerator {
                  BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
 
                 if (is == null) {
-                    System.err.println("File not found: " + path);
+                    System.err.println(ReportGenerator.ColorDefine.ColoredOutput.RED+"File not found: " + path+ ReportGenerator.ColorDefine.ColoredOutput.RESET);
                     return;
                 }
 
@@ -57,7 +57,7 @@ public class ReportGenerator {
                     }
                 }
             } catch (IOException e) {
-                System.err.println("Error reading " + path + ": " + e.getMessage());
+                System.err.println(ReportGenerator.ColorDefine.ColoredOutput.RED+"Error reading " + path + ": " + e.getMessage()+ ReportGenerator.ColorDefine.ColoredOutput.RESET);
             }
         }
 
@@ -70,15 +70,15 @@ public class ReportGenerator {
         }
 
         public void makeReport() {
-            System.out.println("Report for file: " + path);
-            System.out.println("Total cost: $" + totalCost);
+            System.out.println(ReportGenerator.ColorDefine.ColoredOutput.BLUE+"Report for file: " + path);
+            System.out.println("Total cost: $" + String.format("%.2f", totalCost) );
             System.out.println("Total items bought: " + totalAmount);
-            System.out.println("Average discount: " + (totalLines == 0 ? 0 : (double) totalDiscountSum / totalLines) + "%");
+            System.out.println("Average discount: " + (totalLines == 0 ? 0 : String.format("%.2f",(double) totalDiscountSum / totalLines)) + "%");
             if (mostExpensiveProduct != null) {
-                System.out.println("Most expensive purchase after discount: " + mostExpensiveProduct.getProductName() +
-                        " ($" + highestCostAfterDiscount + ")");
+                System.out.println(ReportGenerator.ColorDefine.ColoredOutput.PURPLE+"Most expensive purchase after discount: " + mostExpensiveProduct.getProductName() +
+                        " ($" + highestCostAfterDiscount + ")"+ ReportGenerator.ColorDefine.ColoredOutput.RESET);
             }
-            System.out.println("----------------------------------------------------");
+            System.out.println(ReportGenerator.ColorDefine.ColoredOutput.YELLOW+"--------------------------------------------------------------------------"+ ReportGenerator.ColorDefine.ColoredOutput.RESET);
         }
     }
 
@@ -129,8 +129,23 @@ public class ReportGenerator {
                 productCatalog.add(new Product(id, name, price));
             }
         } catch (IOException e) {
-            System.err.println("Error reading Products.txt: " + e.getMessage());
+            System.err.println(ReportGenerator.ColorDefine.ColoredOutput.RED+"Error reading Products.txt: " + e.getMessage()+ ReportGenerator.ColorDefine.ColoredOutput.RESET);
         }
+
+    }
+
+    public class ColorDefine {
+        public class ColoredOutput {
+            public static final String RESET = "\u001B[0m";
+            public static final String RED = "\u001B[31m";
+            public static final String GREEN = "\u001B[32m";
+            public static final String YELLOW = "\u001B[33m";
+            public static final String BLUE = "\u001B[34m";
+            public static final String PURPLE = "\u001B[35m";
+            public static final String CYAN = "\u001B[36m";
+
+        }
+
     }
 
 

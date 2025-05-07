@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
+
 public class TypingTest {
 
     private static String lastInput = "";
@@ -11,7 +12,6 @@ public class TypingTest {
     private static int correct = 0;
     private static int incorrect = 0;
     private static long totalTime = 0;
-    //private  static int count = 10;
     public static class InputRunnable implements Runnable {
 
         //TODO: Implement a thread to get user input without blocking the main thread
@@ -40,7 +40,7 @@ public class TypingTest {
                 }
             }
         } catch (IOException e) {
-            System.err.println("Error reading file: " + e.getMessage());
+            System.err.println(ColorDefine.ColoredOutput.RED+"Error reading file: " + e.getMessage()+ColorDefine.ColoredOutput.RESET);
         }
         return words;
     }
@@ -55,7 +55,7 @@ public class TypingTest {
     }
     public static void testWord(String wordToTest) {
         try {
-            System.out.println("Type this word : "+wordToTest);
+            System.out.println(ColorDefine.ColoredOutput.CYAN+"Type this word : "+wordToTest+ColorDefine.ColoredOutput.RESET);
             lastInput = "";
 
             // TODO
@@ -73,12 +73,12 @@ public class TypingTest {
 
 
             System.out.println();
-            System.out.println("You typed: " + lastInput);
+            System.out.println(ColorDefine.ColoredOutput.PURPLE+"You typed: " + lastInput+ColorDefine.ColoredOutput.RESET);
             if (lastInput.equalsIgnoreCase(wordToTest)) {
-                System.out.println("Correct");
+                System.out.println(ColorDefine.ColoredOutput.GREEN+"Correct"+ColorDefine.ColoredOutput.RESET);
                 correct++;
             } else {
-                System.out.println("Incorrect");
+                System.out.println(ColorDefine.ColoredOutput.RED+"Incorrect"+ColorDefine.ColoredOutput.RESET);
                 incorrect++;
             }
 
@@ -95,17 +95,17 @@ public class TypingTest {
             Thread.sleep(2000); // Pause briefly before showing the next word
         }
 
-        System.out.println("Typing Test Summery");
+        System.out.println(ColorDefine.ColoredOutput.BLUE+"Typing Test Summery");
         System.out.println("Correct Words : " + correct);
         System.out.println("Incorrect Words : " +incorrect);
         System.out.println("Total time : "+totalTime/1000.00);
-        System.out.println("Average foe each word :"+totalTime/((correct+incorrect)*1000.00));
+        System.out.println("Average foe each word :"+totalTime/((correct+incorrect)*1000.00)+ColorDefine.ColoredOutput.RESET);
     }
 
     public static void main(String[] args) throws InterruptedException {
         List<String> allWords = readWordsFromFile("resources/Words.txt");
         if (allWords.isEmpty()) {
-            System.out.println("No words found in file.");
+            System.out.println(ColorDefine.ColoredOutput.RED+"No words found in file."+ColorDefine.ColoredOutput.RESET);
             return;
         }
 
@@ -115,4 +115,19 @@ public class TypingTest {
         System.out.println("\nPress Enter to exit.");
         scanner.nextLine();
     }
+
+    public class ColorDefine {
+        public class ColoredOutput {
+            public static final String RESET = "\u001B[0m";
+            public static final String RED = "\u001B[31m";
+            public static final String GREEN = "\u001B[32m";
+            public static final String YELLOW = "\u001B[33m";
+            public static final String BLUE = "\u001B[34m";
+            public static final String PURPLE = "\u001B[35m";
+            public static final String CYAN = "\u001B[36m";
+
+        }
+
+    }
+
 }
